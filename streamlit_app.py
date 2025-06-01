@@ -3,9 +3,10 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import sys
-sys.path.append(r'C:\CNS\Hackathon_AI\recommend_laptop\src')
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
+from textblob import TextBlob
 from laptop_recommender import LaptopRecommendationChatbot
-
 # Cấu hình trang
 st.set_page_config(
     page_title="Laptop Recommendation Chatbot",
@@ -56,23 +57,50 @@ def load_data():
     chatbot = load_chatbot()
     return chatbot.df
 
+def analyze_sentiment(text):
+    """Simple sentiment analysis"""
+    positive_words = ['tốt', 'good', 'great', 'excellent', 'amazing', 'love', 'like', 'best']
+    negative_words = ['bad', 'terrible', 'awful', 'hate', 'worst', 'xấu', 'tệ']
+    
+    text_lower = text.lower()
+    pos_count = sum(1 for word in positive_words if word in text_lower)
+    neg_count = sum(1 for word in negative_words if word in text_lower)
+    
+    if pos_count > neg_count:
+        return "Tích cực 😊"
+    elif neg_count > pos_count:
+        return "Tiêu cực 😞"
+    else:
+        return "Trung tính 😐"
+
 def main():
     st.markdown('<h1 class="main-header">💻 Laptop Recommendation Chatbot</h1>', unsafe_allow_html=True)
     
-    # Load chatbot
+    # Initialize session state
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
+    
+    # Load chatbot and data
     chatbot = load_chatbot()
     df = load_data()
+    
+    # Store data in session state for filtering
+    if "laptop_data" not in st.session_state:
+        st.session_state.laptop_data = df
     
     # Sidebar
     with st.sidebar:
         st.markdown("## 🎯 Quick Filters")
         
+        # Convert price to millions for Vietnam currency display
+        df_price_millions = df['price'] / 1000000 if df['price'].max() > 10000 else df['price']
+        
         # Budget filter
         budget_range = st.slider(
-            "Budget Range ($)",
-            min_value=int(df['price'].min()),
-            max_value=int(df['price'].max()),
-            value=(int(df['price'].min()), int(df['price'].max()))
+            "Budget Range (triệu VNĐ)" if df['price'].max() > 10000 else "Budget Range ($)",
+            min_value=float(df_price_millions.min()),
+            max_value=float(df_price_millions.max()),
+            value=(float(df_price_millions.min()), float(df_price_millions.max()))
         )
         
         # Brand filter
@@ -80,8 +108,11 @@ def main():
         selected_brand = st.selectbox("Brand", brands)
         
         # Performance filter
-        performance_tiers = ['All'] + sorted(df['performance_tier'].unique().tolist())
-        selected_performance = st.selectbox("Performance Tier", performance_tiers)
+        if 'performance_tier' in df.columns:
+            performance_tiers = ['All'] + sorted(df['performance_tier'].unique().tolist())
+            selected_performance = st.selectbox("Performance Tier", performance_tiers)
+        else:
+            selected_performance = 'All'
         
         # Purpose
         st.markdown("### 🎮 Purpose")
@@ -97,99 +128,76 @@ def main():
         st.markdown("---")
         st.markdown("### 📊 Dataset Info")
         st.metric("Total Laptops", len(df))
-        st.metric("Price Range", f"${df['price'].min():.0f} - ${df['price'].max():.0f}")
+        price_display = f"{df_price_millions.min():.1f} - {df_price_millions.max():.1f} dolar" if df['price'].max() > 10000 else f"${df['price'].min():.0f} - ${df['price'].max():.0f}"
+        st.metric("Price Range", price_display)
         st.metric("Avg Rating", f"{df['rating'].mean():.1f}/5.0")
     
     # Main content area
     col1, col2 = st.columns([2, 1])
+    
     with col1:
         # Chat interface
         st.subheader("💬 Trò chuyện với AI")
         
-        # Hiển thị lịch sử chat
+        # Display chat history
         for message in st.session_state.messages:
             with st.chat_message(message["role"]):
                 st.markdown(message["content"])
         
-        # Input chat
+        # Chat input
         if prompt := st.chat_input("Hãy mô tả nhu cầu sử dụng laptop của bạn..."):
-            # Thêm tin nhắn người dùng
+            # Add user message
             st.session_state.messages.append({"role": "user", "content": prompt})
             with st.chat_message("user"):
                 st.markdown(prompt)
             
-            # Xử lý và phản hồi
+            # Process and respond
             with st.chat_message("assistant"):
                 with st.spinner("Đang phân tích và tìm kiếm..."):
-                    # Phân tích sentiment
-                    sentiment = analyze_sentiment(prompt)
-                    
-                    # Trích xuất thông tin giá từ prompt
-                    price_match = re.findall(r'(\d+)\s*(?:triệu|tr|million)', prompt.lower())
-                    max_price = None
-                    if price_match:
-                        max_price = int(price_match[0]) * 1000000
-                    else:
-                        max_price = price_range[1] * 1000000
-                    
-                    # Lọc dữ liệu theo sidebar
-                    filtered_data = st.session_state.laptop_data[
-                        (st.session_state.laptop_data['brand'].isin(brands)) &
-                        (st.session_state.laptop_data['price'] >= price_range[0] * 1000000) &
-                        (st.session_state.laptop_data['price'] <= price_range[1] * 1000000)
-                    ]
-                    
-                    if len(filtered_data) > 0:
-                        # Tạo recommender mới với dữ liệu đã lọc
-                        temp_recommender = LaptopRecommendationSystem(filtered_data)
-                        recommendations, scores = temp_recommender.hybrid_recommend(prompt, max_price, top_k=3)
+                    try:
+                        # Get chatbot response
+                        response = chatbot.chat(prompt)
                         
-                        response = f"**Cảm xúc của bạn:** {sentiment}\n\n"
-                        response += f"**Dựa trên yêu cầu của bạn, tôi gợi ý {len(recommendations)} laptop sau:**\n\n"
+                        # Display response
+                        st.markdown(response)
+                        st.session_state.messages.append({"role": "assistant", "content": response})
                         
-                        for idx, (_, laptop) in enumerate(recommendations.iterrows()):
-                            response += f"**{idx+1}. {laptop['name']}** ({laptop['brand']})\n"
-                            response += f"- 💰 Giá: {laptop['price']/1000000:.1f} triệu VNĐ\n"
-                            response += f"- 💻 CPU: {laptop['cpu']} | RAM: {laptop['ram']}GB | Storage: {laptop['storage']}GB\n"
-                            response += f"- 📺 Màn hình: {laptop['screen']}\" | ⚖️ Trọng lượng: {laptop['weight']}kg\n"
-                            response += f"- ⭐ Rating: {laptop['rating']}/5 | 🔋 Pin: {laptop['battery']}h\n"
-                            response += f"- 📝 Mô tả: {laptop['description']}\n\n"
-                        
-                        response += "Bạn có cần thêm thông tin chi tiết về laptop nào không? 😊"
-                    else:
-                        response = "Xin lỗi, không tìm thấy laptop phù hợp với bộ lọc hiện tại. Hãy thử điều chỉnh bộ lọc bên trái! 😅"
-                    
-                    st.markdown(response)
-                    st.session_state.messages.append({"role": "assistant", "content": response})
+                    except Exception as e:
+                        error_message = f"Xin lỗi, có lỗi xảy ra: {str(e)}"
+                        st.error(error_message)
+                        st.session_state.messages.append({"role": "assistant", "content": error_message})
 
     with col2:
         # Visualization
         st.subheader("📈 Phân tích thị trường")
         
-        # Biểu đồ giá theo thương hiệu
-        fig_price = px.box(
-            st.session_state.laptop_data, 
-            x='brand', 
-            y='price',
-            title="Phân bố giá theo thương hiệu",
-            labels={'price': 'Giá (VNĐ)', 'brand': 'Thương hiệu'}
-        )
-        fig_price.update_layout(height=300)
-        st.plotly_chart(fig_price, use_container_width=True)
-        
-        # Biểu đồ rating vs price
-        fig_scatter = px.scatter(
-            st.session_state.laptop_data,
-            x='price', 
-            y='rating',
-            size='ram',
-            color='brand',
-            title="Rating vs Giá",
-            labels={'price': 'Giá (VNĐ)', 'rating': 'Rating'},
-            hover_data=['name']
-        )
-        fig_scatter.update_layout(height=300)
-        st.plotly_chart(fig_scatter, use_container_width=True)
+        try:
+            # Price distribution by brand
+            fig_price = px.box(
+                df, 
+                x='brand', 
+                y='price',
+                title="Phân bố giá theo thương hiệu",
+                labels={'price': 'Giá (VNĐ)' if df['price'].max() > 10000 else 'Giá ($)', 'brand': 'Thương hiệu'}
+            )
+            fig_price.update_layout(height=300)
+            st.plotly_chart(fig_price, use_container_width=True)
+            
+            # Rating vs price scatter plot
+            fig_scatter = px.scatter(
+                df,
+                x='price', 
+                y='rating',
+                color='brand',
+                title="Rating vs Giá",
+                labels={'price': 'Giá (VNĐ)' if df['price'].max() > 10000 else 'Giá ($)', 'rating': 'Rating'},
+                hover_data=['brand'] if 'model' not in df.columns else ['brand', 'model']
+            )
+            fig_scatter.update_layout(height=300)
+            st.plotly_chart(fig_scatter, use_container_width=True)
+            
+        except Exception as e:
+            st.error(f"Lỗi hiển thị biểu đồ: {str(e)}")
 
     # Quick actions
     st.subheader("🚀 Gợi ý nhanh")
@@ -197,27 +205,27 @@ def main():
 
     with col1:
         if st.button("🎮 Gaming"):
-            query = "gaming laptop mạnh chơi game"
+            query = "Tôi cần laptop gaming mạnh để chơi game"
             st.session_state.messages.append({"role": "user", "content": query})
-            st.experimental_rerun()
+            st.rerun()
 
     with col2:
         if st.button("💼 Văn phòng"):
-            query = "laptop văn phòng nhẹ pin trâu"
+            query = "Tôi cần laptop văn phòng nhẹ pin trâu"
             st.session_state.messages.append({"role": "user", "content": query})
-            st.experimental_rerun()
+            st.rerun()
 
     with col3:
         if st.button("🎨 Thiết kế"):
-            query = "laptop thiết kế đồ họa màn hình đẹp"
+            query = "Tôi cần laptop thiết kế đồ họa màn hình đẹp"
             st.session_state.messages.append({"role": "user", "content": query})
-            st.experimental_rerun()
+            st.rerun()
 
     with col4:
         if st.button("🎓 Sinh viên"):
-            query = "laptop sinh viên giá rẻ học tập"
+            query = "Tôi cần laptop sinh viên giá rẻ cho học tập"
             st.session_state.messages.append({"role": "user", "content": query})
-            st.experimental_rerun()
+            st.rerun()
 
     # Footer
     st.markdown("---")
@@ -234,4 +242,7 @@ def main():
     # Reset chat button
     if st.sidebar.button("🗑️ Xóa lịch sử chat"):
         st.session_state.messages = []
-        st.experimental_rerun()
+        st.rerun()
+
+if __name__ == "__main__":
+    main()

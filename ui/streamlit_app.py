@@ -67,12 +67,7 @@ def analyze_sentiment(text):
 
 @st.cache_resource
 def load_chatbot():
-    """Load chatbot với caching"""
-    try:
-        return LaptopRecommendationChatbot()
-    except Exception as e:
-        st.error(f"Error loading chatbot: {str(e)}")
-        return None
+    return LaptopRecommendationChatbot()
 
 @st.cache_data
 def load_data():

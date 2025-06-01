@@ -44,7 +44,7 @@ def download_nltk_data():
 download_nltk_data()
 
 class LaptopRecommendationChatbot:
-    def __init__(self, csv_file_path=None):
+    def __init__(self, csv_path):
         """
         Khởi tạo chatbot với dữ liệu laptop
         """
@@ -64,8 +64,8 @@ class LaptopRecommendationChatbot:
                              'to', 'was', 'will', 'with'}
         
         # Load data if provided
-        if csv_file_path:
-            self.load_data(csv_file_path)
+        if csv_path:
+            self.load_data(csv_path)
         else:
             # Sample data for demonstration
             self._create_sample_data()

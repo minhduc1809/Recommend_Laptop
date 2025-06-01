@@ -14,7 +14,7 @@ import sys
 import io
 import warnings
 import os
-csv_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data', 'laptop_data.csv'))
+csv_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data', 'laptop_prices_cleaned.csv'))
 
 # Cấu hình encoding và warning
 try:

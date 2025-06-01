@@ -4,14 +4,9 @@ import plotly.express as px
 import plotly.graph_objects as go
 import sys
 import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(laptop_recommender.py), '..', 'src')))
 from textblob import TextBlob
-try:
-    from laptop_recommender import LaptopRecommendationChatbot
-except ImportError:
-    st.error("Cannot import LaptopRecommendationChatbot. Please check the path and module.")
-    st.stop()
-
+from laptop_recommender import LaptopRecommendationChatbot
 # Cấu hình trang
 st.set_page_config(
     page_title="Laptop Recommendation Chatbot",

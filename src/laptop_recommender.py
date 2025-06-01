@@ -64,26 +64,15 @@ class LaptopRecommendationChatbot:
                              'to', 'was', 'will', 'with'}
         
         # Load data if provided
-        if csv_path:
-            self.load_data(csv_path)
-        else:
-            # Sample data for demonstration
-            self._create_sample_data()
-            
+        self.load_data(csv_path)
         self._preprocess_data()
         self._build_content_based_model()
         self._build_price_prediction_model()
-        
-    def _create_sample_data(self):
-        """Tạo dữ liệu mẫu nếu không có file CSV"""
-        sample_data = pd.read_csv(r'C:\CNS\Hackathon_AI\recommend_laptop\data\laptop_prices_cleaned.csv')
-        self.df = pd.DataFrame(sample_data)
-            
-    def load_data(self, csv_file_path):
+    def load_data(self, csv_path):
         """Load dữ liệu từ file CSV"""
         try:
-            self.df = pd.read_csv(csv_file_path)
-            print(f"Đã load {len(self.df)} laptop từ {csv_file_path}")
+            self.df = pd.read_csv(csv_path)
+            print(f"Đã load {len(self.df)} laptop từ {csv_path}")
         except Exception as e:
             print(f"Lỗi khi load data: {e}")
             self._create_sample_data()

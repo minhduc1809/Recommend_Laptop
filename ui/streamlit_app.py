@@ -133,7 +133,7 @@ def main():
         st.markdown("---")
         st.markdown("### 📊 Dataset Info")
         st.metric("Total Laptops", len(df))
-        price_display = f"{df_price_millions.min():.1f} - {df_price_millions.max():.1f} triệu" if df['price'].max() > 10000 else f"${df['price'].min():.0f} - ${df['price'].max():.0f}"
+        price_display = f"{df_price_millions.min():.1f} - {df_price_millions.max():.1f} dolar" if df['price'].max() > 10000 else f"${df['price'].min():.0f} - ${df['price'].max():.0f}"
         st.metric("Price Range", price_display)
         st.metric("Avg Rating", f"{df['rating'].mean():.1f}/5.0")
     

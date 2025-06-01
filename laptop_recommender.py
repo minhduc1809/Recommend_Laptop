@@ -10,11 +10,8 @@ import nltk
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.stem import PorterStemmer
-import sys
 import io
 import warnings
-import os
-csv_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data', 'laptop_prices_cleaned.csv'))
 
 # Cấu hình encoding và warning
 try:
@@ -44,7 +41,7 @@ def download_nltk_data():
 download_nltk_data()
 
 class LaptopRecommendationChatbot:
-    def __init__(self, csv_path=None):
+    def __init__(self):
         """
         Khởi tạo chatbot với dữ liệu laptop
         """
@@ -64,18 +61,13 @@ class LaptopRecommendationChatbot:
                              'to', 'was', 'will', 'with'}
         
         # Load data if provided
-        self.load_data(csv_path)
+        self.load_data()
         self._preprocess_data()
         self._build_content_based_model()
         self._build_price_prediction_model()
-    def load_data(self, csv_path):
+    def load_data(self):
         """Load dữ liệu từ file CSV"""
-        try:
-            self.df = pd.read_csv(csv_path)
-            print(f"Đã load {len(self.df)} laptop từ {csv_path}")
-        except Exception as e:
-            print(f"Lỗi khi load data: {e}")
-            self._create_sample_data()
+        self.df=pd.read_csv('laptop_prices_cleaned.csv')
     
     def _preprocess_data(self):
         """Tiền xử lý dữ liệu"""

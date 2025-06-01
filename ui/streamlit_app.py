@@ -4,7 +4,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import sys
 import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(laptop_recommender.py), '..', 'src')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(laptop_recommender), '..', 'src')))
 from textblob import TextBlob
 from laptop_recommender import LaptopRecommendationChatbot
 # Cấu hình trang

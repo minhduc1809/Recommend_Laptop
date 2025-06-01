@@ -3,7 +3,8 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import sys
-sys.path.append(r'.\src')
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
 from laptop_recommender import LaptopRecommendationChatbot
 
 # Cấu hình trang

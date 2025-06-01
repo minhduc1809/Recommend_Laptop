@@ -76,29 +76,8 @@ class LaptopRecommendationChatbot:
         
     def _create_sample_data(self):
         """Tạo dữ liệu mẫu nếu không có file CSV"""
-        try:
-            sample_data = pd.read_csv(csv_path)
-            self.df = pd.DataFrame(sample_data)
-        except FileNotFoundError:
-            print("Không tìm thấy file CSV, tạo dữ liệu mẫu...")
-            # Tạo dữ liệu mẫu
-            sample_data = {
-                'brand': ['Dell', 'HP', 'Asus', 'Lenovo', 'Acer', 'Apple', 'MSI', 'Dell', 'HP', 'Asus'],
-                'model': ['XPS 13', 'Pavilion', 'VivoBook', 'ThinkPad', 'Aspire 5', 'MacBook Air', 'Gaming GF63', 'Inspiron 15', 'Envy x360', 'ROG Strix'],
-                'cpu': ['Intel i7', 'Intel i5', 'AMD Ryzen 5', 'Intel i7', 'AMD Ryzen 3', 'Apple M1', 'Intel i5', 'Intel i3', 'AMD Ryzen 7', 'Intel i7'],
-                'ram': ['16GB', '8GB', '8GB', '16GB', '8GB', '8GB', '16GB', '8GB', '16GB', '32GB'],
-                'harddisk': ['512GB SSD', '256GB SSD', '512GB SSD', '512GB SSD', '1TB HDD', '256GB SSD', '512GB SSD', '1TB HDD', '512GB SSD', '1TB SSD'],
-                'graphics': ['Integrated', 'Integrated', 'Integrated', 'Integrated', 'Integrated', 'Integrated', 'Dedicated', 'Integrated', 'Integrated', 'Dedicated'],
-                'screen_size': ['13.3"', '15.6"', '15.6"', '14"', '15.6"', '13.3"', '15.6"', '15.6"', '13.3"', '17.3"'],
-                'os': ['Windows 11', 'Windows 11', 'Windows 11', 'Windows 11', 'Windows 11', 'macOS', 'Windows 11', 'Windows 11', 'Windows 11', 'Windows 11'],
-                'color': ['Silver', 'Black', 'Silver', 'Black', 'Silver', 'Silver', 'Black', 'Silver', 'Silver', 'Black'],
-                'special_features': ['Business', 'Entertainment', 'Student', 'Business', 'Budget', 'Creative', 'Gaming', 'General', 'Creative', 'Gaming'],
-                'performance_tier': ['High-End', 'Mid-Range', 'Mid-Range', 'High-End', 'Budget', 'High-End', 'High-End', 'Entry-Level', 'High-End', 'High-End'],
-                'price': [1200, 600, 500, 1400, 400, 999, 800, 450, 900, 1800],
-                'rating': [4.5, 4.0, 3.8, 4.7, 3.5, 4.8, 4.2, 3.7, 4.3, 4.6]
-            }
-            self.df = pd.DataFrame(sample_data)
-            
+        sample_data = pd.read_csv(csv_path)
+        self.df = pd.DataFrame(sample_data) 
     def load_data(self, csv_file_path):
         """Load dữ liệu từ file CSV"""
         try:

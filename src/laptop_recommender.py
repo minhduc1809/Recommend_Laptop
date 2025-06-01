@@ -76,8 +76,9 @@ class LaptopRecommendationChatbot:
         
     def _create_sample_data(self):
         """Tạo dữ liệu mẫu nếu không có file CSV"""
-        sample_data = pd.read_csv(csv_path)
-        self.df = pd.DataFrame(sample_data) 
+        sample_data = pd.read_csv(r'C:\CNS\Hackathon_AI\recommend_laptop\data\laptop_prices_cleaned.csv')
+        self.df = pd.DataFrame(sample_data)
+            
     def load_data(self, csv_file_path):
         """Load dữ liệu từ file CSV"""
         try:

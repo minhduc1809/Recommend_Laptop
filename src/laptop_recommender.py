@@ -13,6 +13,8 @@ from nltk.stem import PorterStemmer
 import sys
 import io
 import warnings
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data')))
 
 # Cấu hình encoding và warning
 try:
@@ -75,7 +77,7 @@ class LaptopRecommendationChatbot:
     def _create_sample_data(self):
         """Tạo dữ liệu mẫu nếu không có file CSV"""
         try:
-            sample_data = pd.read_csv(r'C:\CNS\Hackathon_AI\recommend_laptop\data\laptop_prices_cleaned.csv')
+            sample_data = pd.read_csv('laptop_prices_cleaned.csv')
             self.df = pd.DataFrame(sample_data)
         except FileNotFoundError:
             print("Không tìm thấy file CSV, tạo dữ liệu mẫu...")

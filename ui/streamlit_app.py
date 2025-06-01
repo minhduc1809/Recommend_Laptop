@@ -3,7 +3,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import sys
-sys.path.append(r'C:\CNS\Hackathon_AI\recommend_laptop\src')
+sys.path.append(r'.\src')
 from laptop_recommender import LaptopRecommendationChatbot
 
 # Cấu hình trang
